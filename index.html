@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>NovReader</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#1a1612;--ink2:#4a4540;--ink3:#8a8480;
+  --paper:#faf7f2;--paper2:#f0ebe2;--paper3:#e8e0d4;
+  --gold:#c9a96e;--gold2:#a8803e;--gold3:#e8d4a8;
+  --accent:#8b5e3c;
+  --rd:8px;
+  --bg-reader:#faf7f2;--text-reader:#1a1612;
+  --font-reader:'Lora',serif;--fs-reader:17px;--lh-reader:1.9;--w-reader:680px;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Inter',sans-serif;background:var(--paper);color:var(--ink);display:flex;flex-direction:column}
+
+/* NAV */
+.nav{background:#1a1612;color:#e8d4a8;padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:10}
+.nav-logo{font-family:'Lora',serif;font-size:19px;letter-spacing:.5px;color:#c9a96e;white-space:nowrap}
+.nav-logo span{font-size:11px;color:#8a7a68;margin-left:5px;font-family:'Inter',sans-serif}
+.nav-right{display:flex;align-items:center;gap:8px}
+.btn-ghost{background:transparent;border:.5px solid #5a4e42;color:#c9a96e;padding:5px 12px;border-radius:6px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap}
+.btn-ghost:hover{background:#2a2218;border-color:#c9a96e}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:#1a1612;cursor:pointer;flex-shrink:0}
+
+/* LAYOUT */
+.main{display:flex;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:230px;background:#f5f0e8;border-right:.5px solid var(--paper3);display:flex;flex-direction:column;flex-shrink:0;transition:width .2s,opacity .2s}
+.sidebar.hidden{width:0;opacity:0;overflow:hidden}
+.sidebar-head{padding:14px 14px 10px;border-bottom:.5px solid var(--paper3);flex-shrink:0}
+.book-title{font-family:'Lora',serif;font-size:14px;font-weight:600;color:var(--ink);line-height:1.3;margin-bottom:2px;word-break:break-word}
+.book-info{font-size:11px;color:var(--ink3)}
+.progress-bar{height:3px;background:var(--paper3);border-radius:2px;margin-top:8px}
+.progress-fill{height:3px;background:var(--gold);border-radius:2px;width:0%;transition:width .3s}
+.progress-label{font-size:10px;color:var(--ink3);margin-top:3px}
+.chapter-list{flex:1;overflow-y:auto;padding:6px 0}
+.chapter-item{padding:8px 14px;cursor:pointer;font-size:12.5px;color:var(--ink2);border-left:2px solid transparent;transition:all .12s;line-height:1.4}
+.chapter-item:hover{background:var(--paper3);color:var(--ink)}
+.chapter-item.active{background:var(--gold3);color:var(--accent);border-left-color:var(--gold2);font-weight:500}
+.chap-num{font-size:10px;color:var(--ink3);display:block;margin-bottom:1px}
+.sidebar-footer{padding:10px 14px;border-top:.5px solid var(--paper3);flex-shrink:0}
+.upload-btn{width:100%;background:var(--gold);color:#1a1612;border:none;padding:8px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'Inter',sans-serif}
+.upload-btn:hover{background:var(--gold2)}
+
+/* READER AREA */
+.reader{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.reader-toolbar{background:var(--paper2);border-bottom:.5px solid var(--paper3);padding:0 14px;height:46px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px;transition:height .2s,opacity .2s}
+.reader-toolbar.hidden{height:0;opacity:0;overflow:hidden;padding:0}
+.toolbar-nav{display:flex;align-items:center;gap:5px}
+.tb-btn{background:transparent;border:.5px solid var(--paper3);color:var(--ink2);padding:5px 10px;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap}
+.tb-btn:hover{background:var(--paper3);color:var(--ink)}
+.chapter-pos{font-size:11px;color:var(--ink3);padding:0 6px;white-space:nowrap}
+.toolbar-right{display:flex;align-items:center;gap:5px}
+.icon-btn{background:transparent;border:.5px solid var(--paper3);color:var(--ink2);width:32px;height:32px;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:17px;transition:all .12s;flex-shrink:0}
+.icon-btn:hover{background:var(--paper3);color:var(--ink)}
+.icon-btn.active{background:var(--gold3);color:var(--accent);border-color:var(--gold)}
+
+/* TTS BAR */
+.tts-bar{background:#1a1612;color:#e8d4a8;padding:8px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;transition:all .2s}
+.tts-bar.hidden{display:none}
+.tts-title{font-size:12px;color:#8a7a68;white-space:nowrap;min-width:60px}
+.tts-progress-wrap{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
+.tts-track{height:3px;background:#3a3228;border-radius:2px;position:relative;cursor:pointer}
+.tts-fill{height:3px;background:var(--gold);border-radius:2px;width:0%;transition:width .3s}
+.tts-times{display:flex;justify-content:space-between;font-size:10px;color:#8a7a68}
+.tts-controls{display:flex;align-items:center;gap:6px}
+.tts-btn{background:transparent;border:none;color:#c9a96e;cursor:pointer;padding:4px;border-radius:4px;display:flex;align-items:center;font-size:20px;line-height:1}
+.tts-btn:hover{background:#2a2218}
+.tts-btn.play-pause{width:34px;height:34px;border-radius:50%;background:var(--gold);color:#1a1612;justify-content:center;font-size:16px}
+.tts-btn.play-pause:hover{background:var(--gold2)}
+.tts-rate{background:#2a2218;border:.5px solid #3a3228;color:#c9a96e;padding:3px 6px;border-radius:4px;font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;min-width:38px;text-align:center}
+.tts-voice-sel{background:#2a2218;border:.5px solid #3a3228;color:#c9a96e;padding:3px 6px;border-radius:4px;font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;max-width:120px}
+.tts-word-highlight{background:rgba(201,169,110,0.3);border-radius:2px;transition:background .1s}
+
+/* PANELS WRAP */
+.panels-wrap{display:flex;flex:1;overflow:hidden;position:relative}
+.reader-content{flex:1;overflow-y:auto;padding:28px 32px;background:var(--bg-reader)}
+.reader-content.focus-mode{padding:40px 60px}
+.chapter-heading{font-family:'Lora',serif;font-size:22px;font-weight:600;color:var(--ink);margin-bottom:5px;line-height:1.3}
+.chapter-sub{font-size:11px;color:var(--gold2);margin-bottom:26px;text-transform:uppercase;letter-spacing:1px}
+.chapter-body{font-family:var(--font-reader);font-size:var(--fs-reader);line-height:var(--lh-reader);color:var(--text-reader);max-width:var(--w-reader)}
+.chapter-body p{margin-bottom:1.2em}
+.chapter-body.dropcap p:first-child::first-letter{float:left;font-size:52px;line-height:.85;padding:4px 8px 0 0;color:var(--accent);font-weight:600}
+
+/* SETTINGS PANEL */
+.settings-panel{width:255px;background:var(--paper2);border-left:.5px solid var(--paper3);overflow-y:auto;flex-shrink:0;display:none}
+.settings-panel.open{display:block}
+.sp-head{padding:12px 14px;border-bottom:.5px solid var(--paper3);font-size:13px;font-weight:500;color:var(--ink);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--paper2);z-index:2}
+.sp-close{background:none;border:none;color:var(--ink3);cursor:pointer;font-size:18px;line-height:1}
+.sp-section{padding:12px 14px;border-bottom:.5px solid var(--paper3)}
+.sp-label{font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px}
+.sp-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;gap:6px}
+.sp-row label{font-size:12.5px;color:var(--ink2);white-space:nowrap}
+.sp-row input[type=range]{flex:1;accent-color:var(--gold)}
+.sp-row .val{font-size:11px;color:var(--gold2);min-width:34px;text-align:right}
+.font-btns{display:flex;gap:5px;flex-wrap:wrap}
+.font-btn{padding:4px 9px;border:.5px solid var(--paper3);border-radius:5px;font-size:11.5px;cursor:pointer;background:var(--paper);color:var(--ink2)}
+.font-btn:hover,.font-btn.active{background:var(--gold3);border-color:var(--gold);color:var(--accent)}
+.bg-swatches{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap}
+.swatch{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent}
+.swatch.active{border-color:var(--gold)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+.toggle-row label{font-size:12.5px;color:var(--ink2)}
+.toggle{appearance:none;width:36px;height:20px;background:var(--paper3);border-radius:10px;cursor:pointer;position:relative;transition:background .15s;flex-shrink:0}
+.toggle:checked{background:var(--gold)}
+.toggle::after{content:'';position:absolute;width:14px;height:14px;background:white;border-radius:50%;top:3px;left:3px;transition:left .15s}
+.toggle:checked::after{left:19px}
+.bm-item{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:.5px solid var(--paper3)}
+.bm-item:last-child{border-bottom:none}
+.bm-link{font-size:12px;color:var(--accent);cursor:pointer}
+.bm-del{font-size:16px;color:var(--ink3);cursor:pointer;background:none;border:none;line-height:1}
+
+/* TTS SECTION IN SETTINGS */
+.tts-voice-list{max-height:100px;overflow-y:auto;margin-top:6px;border:.5px solid var(--paper3);border-radius:6px}
+.voice-item{padding:6px 10px;font-size:12px;cursor:pointer;color:var(--ink2);border-bottom:.5px solid var(--paper3)}
+.voice-item:last-child{border-bottom:none}
+.voice-item:hover{background:var(--paper3)}
+.voice-item.active{background:var(--gold3);color:var(--accent)}
+
+/* UPLOAD MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,22,18,.75);display:none;align-items:center;justify-content:center;z-index:200}
+.modal-overlay.open{display:flex}
+.modal{background:var(--paper);border-radius:12px;padding:24px;width:460px;max-width:92%;max-height:90vh;overflow-y:auto}
+.modal h3{font-family:'Lora',serif;font-size:17px;color:var(--ink);margin-bottom:5px}
+.modal-desc{font-size:12.5px;color:var(--ink3);margin-bottom:18px}
+.drop-zone{border:1.5px dashed var(--paper3);border-radius:8px;padding:28px;text-align:center;cursor:pointer;background:var(--paper2)}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--gold);background:var(--gold3)}
+.drop-icon{font-size:30px;margin-bottom:6px}
+.drop-zone p{font-size:13px;color:var(--ink2);margin-bottom:0}
+.drop-zone small{font-size:11px;color:var(--ink3)}
+.sep-section{margin-top:14px}
+.sep-label{font-size:12px;color:var(--ink2);margin-bottom:6px;font-weight:500}
+.sep-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px}
+.sep-tag{padding:3px 10px;border:.5px solid var(--paper3);border-radius:20px;font-size:12px;cursor:pointer;background:var(--paper2);color:var(--ink2)}
+.sep-tag:hover,.sep-tag.active{background:var(--gold3);border-color:var(--gold);color:var(--accent)}
+.sep-custom{display:flex;gap:8px;margin-top:6px}
+.sep-custom input{flex:1;border:.5px solid var(--paper3);border-radius:6px;padding:6px 10px;font-size:13px;background:var(--paper);color:var(--ink);font-family:'Inter',sans-serif}
+.sep-custom input:focus{outline:none;border-color:var(--gold)}
+.modal-footer{display:flex;gap:8px;margin-top:18px;justify-content:flex-end}
+.btn-cancel{background:transparent;border:.5px solid var(--paper3);color:var(--ink2);padding:7px 14px;border-radius:6px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif}
+.btn-ok{background:var(--gold);color:#1a1612;border:none;padding:7px 18px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif}
+.btn-ok:hover{background:var(--gold2)}
+
+/* DRIVE PANEL */
+.drive-panel{position:fixed;top:62px;right:12px;background:var(--paper);border:.5px solid var(--paper3);border-radius:10px;padding:14px;width:210px;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:100;display:none}
+.drive-panel.open{display:block}
+.dp-head{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:10px}
+.dp-btn{width:100%;padding:7px 10px;border-radius:6px;font-size:12.5px;cursor:pointer;font-family:'Inter',sans-serif;margin-bottom:6px;display:flex;align-items:center;gap:8px;border:none}
+.dp-btn.drive{background:#e8f0fe;color:#1a73e8}
+.dp-btn.drive:hover{background:#d2e3fc}
+.dp-btn.fb{background:#fff3e0;color:#e65100}
+.dp-btn.fb:hover{background:#ffe0b2}
+.dp-status{font-size:11px;color:var(--gold2);margin-top:4px;text-align:center;display:none}
+.dp-status.show{display:block}
+
+/* WELCOME SCREEN */
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--ink3);text-align:center;padding:20px}
+.welcome-icon{font-size:48px;margin-bottom:14px}
+.welcome h2{font-family:'Lora',serif;font-size:18px;color:var(--ink2);margin-bottom:6px}
+.welcome p{font-size:13px;margin-bottom:18px}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1612;color:#e8d4a8;padding:9px 18px;border-radius:8px;font-size:13px;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:1}
+
+/* MOBILE */
+@media(max-width:640px){
+  .sidebar{position:fixed;left:0;top:52px;bottom:0;z-index:50;width:220px;transform:translateX(-100%);transition:transform .25s;box-shadow:4px 0 16px rgba(0,0,0,.15)}
+  .sidebar.mobile-open{transform:translateX(0)}
+  .sidebar.hidden{width:220px;opacity:1;overflow:visible}
+  .hamburger{display:flex}
+  .reader-content{padding:20px 16px}
+  .reader-content.focus-mode{padding:24px 20px}
+  .settings-panel{position:fixed;right:0;top:52px;bottom:0;z-index:50;display:none;width:240px;box-shadow:-4px 0 16px rgba(0,0,0,.12)}
+  .settings-panel.open{display:block}
+  .tts-bar{flex-wrap:wrap;gap:6px;padding:8px 12px}
+  .tts-voice-sel{max-width:90px}
+  .chapter-heading{font-size:18px}
+  .chapter-body.dropcap p:first-child::first-letter{font-size:40px}
+}
+@media(min-width:641px){
+  .hamburger{display:none}
+}
+.hamburger{background:transparent;border:none;color:#c9a96e;cursor:pointer;font-size:22px;line-height:1;padding:2px}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="hamburger" onclick="toggleMobileSidebar()" aria-label="Menu">
+      <i class="ti ti-menu-2"></i>
+    </button>
+    <div class="nav-logo">📖 NovReader <span>Beta</span></div>
+  </div>
+  <div class="nav-right">
+    <button class="btn-ghost" id="loginBtn" onclick="doLogin()">
+      <i class="ti ti-brand-google" style="font-size:14px;vertical-align:-2px"></i> Đăng nhập
+    </button>
+    <div class="avatar" id="avatarEl" style="display:none" onclick="toggleDrive()">NT</div>
+  </div>
+</nav>
+
+<div class="main">
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <div class="book-title" id="bookTitle">Chưa có truyện nào</div>
+      <div class="book-info" id="bookInfo">Tải lên file .txt để bắt đầu</div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-label" id="progressLabel">0% đã đọc</div>
+    </div>
+    <div class="chapter-list" id="chapterList">
+      <div style="padding:24px 14px;text-align:center;color:var(--ink3);font-size:12px;line-height:1.6">
+        <i class="ti ti-books" style="font-size:28px;display:block;margin-bottom:8px;color:var(--paper3)"></i>
+        Chưa có truyện nào.<br>Bấm <strong style="color:var(--gold2)">Tải lên</strong> để thêm sách.
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <button class="upload-btn" onclick="openUpload()">
+        <i class="ti ti-upload"></i> Tải lên sách mới
+      </button>
+    </div>
+  </div>
+
+  <!-- READER -->
+  <div class="reader">
+    <!-- TOOLBAR -->
+    <div class="reader-toolbar" id="readerToolbar" style="display:none">
+      <div class="toolbar-nav">
+        <button class="tb-btn" onclick="prevChapter()"><i class="ti ti-chevron-left"></i> Trước</button>
+        <span class="chapter-pos" id="chapterPos">—</span>
+        <button class="tb-btn" onclick="nextChapter()">Sau <i class="ti ti-chevron-right"></i></button>
+      </div>
+      <div class="toolbar-right">
+        <button class="icon-btn" id="ttsToggleBtn" onclick="toggleTtsBar()" title="Text-to-Speech">
+          <i class="ti ti-volume"></i>
+        </button>
+        <button class="icon-btn" id="bmkBtn" onclick="toggleBookmark()" title="Bookmark">
+          <i class="ti ti-bookmark"></i>
+        </button>
+        <button class="icon-btn" id="settBtn" onclick="toggleSettings()" title="Cài đặt">
+          <i class="ti ti-settings"></i>
+        </button>
+        <button class="icon-btn" onclick="toggleDrive()" title="Lưu đám mây">
+          <i class="ti ti-cloud-upload"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- TTS BAR -->
+    <div class="tts-bar hidden" id="ttsBar">
+      <div class="tts-title" id="ttsLabel">TTS</div>
+      <div class="tts-progress-wrap">
+        <div class="tts-track" id="ttsTrack" onclick="seekTts(event)">
+          <div class="tts-fill" id="ttsFill"></div>
+        </div>
+        <div class="tts-times">
+          <span id="ttsPos">0 / 0 từ</span>
+          <span id="ttsPct">0%</span>
+        </div>
+      </div>
+      <div class="tts-controls">
+        <button class="tts-btn" onclick="skipTts(-50)" title="Lùi 50 từ"><i class="ti ti-player-skip-back" style="font-size:16px"></i></button>
+        <button class="tts-btn play-pause" id="ttsPlayBtn" onclick="togglePlay()">
+          <i class="ti ti-player-play" id="ttsPlayIcon"></i>
+        </button>
+        <button class="tts-btn" onclick="skipTts(50)" title="Tiến 50 từ"><i class="ti ti-player-skip-forward" style="font-size:16px"></i></button>
+        <button class="tts-btn" onclick="stopTts()" title="Dừng"><i class="ti ti-player-stop" style="font-size:16px"></i></button>
+        <select class="tts-rate" id="ttsRate" onchange="changeRate(this.value)" title="Tốc độ">
+          <option value="0.75">0.75×</option>
+          <option value="1" selected>1×</option>
+          <option value="1.25">1.25×</option>
+          <option value="1.5">1.5×</option>
+          <option value="2">2×</option>
+        </select>
+        <select class="tts-voice-sel" id="ttsVoiceSel" title="Giọng tiếng Việt"></select>
+      </div>
+    </div>
+
+    <!-- PANELS -->
+    <div class="panels-wrap">
+      <div class="reader-content" id="readerContent">
+        <div class="welcome" id="welcomeScreen">
+          <div class="welcome-icon">📚</div>
+          <h2>Chào mừng đến với NovReader</h2>
+          <p>Tải lên file .txt để bắt đầu đọc sách với hỗ trợ Text-to-Speech</p>
+          <button class="upload-btn" style="width:auto;padding:9px 22px" onclick="openUpload()">
+            <i class="ti ti-upload"></i> Tải lên ngay
+          </button>
+        </div>
+      </div>
+
+      <!-- SETTINGS PANEL -->
+      <div class="settings-panel" id="settingsPanel">
+        <div class="sp-head">
+          Cài đặt trang đọc
+          <button class="sp-close" onclick="toggleSettings()">×</button>
+        </div>
+
+        <!-- FONT & LAYOUT -->
+        <div class="sp-section">
+          <div class="sp-label">Cỡ chữ</div>
+          <div class="sp-row">
+            <label style="font-size:11px">A</label>
+            <input type="range" min="13" max="24" value="17" id="fontSizeSlider" oninput="updateFont()">
+            <span class="val" id="fontSizeVal">17px</span>
+          </div>
+          <div class="sp-label" style="margin-top:7px">Khoảng cách dòng</div>
+          <div class="sp-row">
+            <label>≡</label>
+            <input type="range" min="14" max="24" value="19" id="lineHSlider" oninput="updateFont()">
+            <span class="val" id="lineHVal">1.9</span>
+          </div>
+          <div class="sp-label" style="margin-top:7px">Độ rộng</div>
+          <div class="sp-row">
+            <label>↔</label>
+            <input type="range" min="300" max="900" value="680" step="10" id="widthSlider" oninput="updateFont()">
+            <span class="val" id="widthVal">680</span>
+          </div>
+        </div>
+
+        <!-- FONT FAMILY -->
+        <div class="sp-section">
+          <div class="sp-label">Font chữ</div>
+          <div class="font-btns">
+            <button class="font-btn active" onclick="setFont('Lora',this)">Lora</button>
+            <button class="font-btn" onclick="setFont('Georgia',this)">Georgia</button>
+            <button class="font-btn" onclick="setFont('Inter',this)">Sans</button>
+            <button class="font-btn" onclick="setFont('palatino',this)">Palatino</button>
+          </div>
+        </div>
+
+        <!-- BG COLOR -->
+        <div class="sp-section">
+          <div class="sp-label">Màu nền</div>
+          <div class="bg-swatches">
+            <div class="swatch active" style="background:#faf7f2;border-color:transparent" title="Giấy" onclick="setBg('#faf7f2','#1a1612',this)"></div>
+            <div class="swatch" style="background:#1a1a2e" title="Tối đêm" onclick="setBg('#1a1a2e','#d4cfc8',this)"></div>
+            <div class="swatch" style="background:#2a2010" title="Nâu" onclick="setBg('#2a2010','#e8d4a8',this)"></div>
+            <div class="swatch" style="background:#fff" title="Trắng" onclick="setBg('#fff','#1a1612',this)"></div>
+            <div class="swatch" style="background:#f0e6d0" title="Sepia" onclick="setBg('#f0e6d0','#2a1a08',this)"></div>
+            <div class="swatch" style="background:#0d1117" title="Dev dark" onclick="setBg('#0d1117','#c9d1d9',this)"></div>
+          </div>
+        </div>
+
+        <!-- TOGGLES -->
+        <div class="sp-section">
+          <div class="toggle-row">
+            <label>Chế độ tập trung</label>
+            <input type="checkbox" class="toggle" id="focusMode" onchange="toggleFocus()">
+          </div>
+          <div class="toggle-row" style="margin-top:8px">
+            <label>Chữ hoa đầu đoạn</label>
+            <input type="checkbox" class="toggle" checked id="dropcapToggle" onchange="loadChapter(S.currentChapter)">
+          </div>
+          <div class="toggle-row" style="margin-top:8px">
+            <label>Làm nổi từ đang đọc</label>
+            <input type="checkbox" class="toggle" checked id="highlightToggle">
+          </div>
+        </div>
+
+        <!-- TTS VOICES -->
+        <div class="sp-section">
+          <div class="sp-label">Giọng đọc tiếng Việt</div>
+          <div id="voiceListEl" style="font-size:12px;color:var(--ink3)">Đang tải danh sách giọng đọc...</div>
+          <div style="margin-top:8px">
+            <div class="sp-label">Âm lượng</div>
+            <div class="sp-row">
+              <label><i class="ti ti-volume" style="font-size:14px"></i></label>
+              <input type="range" min="0" max="1" step="0.1" value="1" id="volSlider" oninput="changeVol(this.value)">
+              <span class="val" id="volVal">100%</span>
+            </div>
+            <div class="sp-label" style="margin-top:6px">Cao độ</div>
+            <div class="sp-row">
+              <label><i class="ti ti-music" style="font-size:14px"></i></label>
+              <input type="range" min="0.5" max="2" step="0.1" value="1" id="pitchSlider" oninput="changePitch(this.value)">
+              <span class="val" id="pitchVal">1.0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- BOOKMARKS -->
+        <div class="sp-section">
+          <div class="sp-label">Bookmark</div>
+          <div id="bookmarkList" style="font-size:12px;color:var(--ink3)">Chưa có bookmark nào</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- UPLOAD MODAL -->
+<div class="modal-overlay" id="uploadModal">
+  <div class="modal">
+    <h3>Tải lên sách</h3>
+    <p class="modal-desc">Hỗ trợ file .txt — UTF-8, tự động phân tách chương</p>
+    <div class="drop-zone" id="dropZone"
+         onclick="document.getElementById('fileInput').click()"
+         ondragover="event.preventDefault();this.classList.add('drag')"
+         ondragleave="this.classList.remove('drag')"
+         ondrop="handleDrop(event)">
+      <div class="drop-icon">📂</div>
+      <p>Kéo thả file hoặc bấm để chọn</p>
+      <small>Định dạng: .txt | Mã hóa: UTF-8</small>
+    </div>
+    <input type="file" id="fileInput" accept=".txt" style="display:none" onchange="handleFile(event)">
+    <div class="sep-section">
+      <div class="sep-label">Định dạng phân tách chương</div>
+      <div class="sep-tags">
+        <div class="sep-tag active" onclick="selectSep('auto',this)">🔍 Tự động</div>
+        <div class="sep-tag" onclick="selectSep('chapter',this)">Chương XX:</div>
+        <div class="sep-tag" onclick="selectSep('thu',this)">Thứ XX chương</div>
+        <div class="sep-tag" onclick="selectSep('chapter_en',this)">Chapter XX</div>
+        <div class="sep-tag" onclick="selectSep('hoi',this)">Hồi XX</div>
+        <div class="sep-tag" onclick="selectSep('phan',this)">Phần XX</div>
+        <div class="sep-tag" onclick="selectSep('separator',this)">--- phân cách</div>
+        <div class="sep-tag" onclick="selectSep('custom',this)">Tùy chỉnh...</div>
+      </div>
+      <div class="sep-custom" id="customSepRow" style="display:none">
+        <input type="text" id="customSepInput" placeholder="Nhập từ khóa, vd: === hoặc PART">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeUpload()">Hủy</button>
+      <button class="btn-ok" id="parseBtn" onclick="triggerParse()">Xử lý & Đọc</button>
+    </div>
+  </div>
+</div>
+
+<!-- DRIVE PANEL -->
+<div class="drive-panel" id="drivePanel">
+  <div id="dpUserInfo"></div>
+  <div class="dp-head"><i class="ti ti-cloud" style="font-size:15px;vertical-align:-2px;margin-right:5px"></i>Lưu trữ đám mây</div>
+  <button class="dp-btn drive" onclick="saveToDrive()">
+    <i class="ti ti-brand-google-drive" style="font-size:16px"></i> Lưu vào Google Drive
+  </button>
+  <button class="dp-btn fb" onclick="saveToFirebase()">
+    <i class="ti ti-database" style="font-size:16px"></i> Lưu vào Firebase
+  </button>
+  <div class="dp-status" id="dpStatus"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===================== STATE =====================
+const S = {
+  chapters: [], currentChapter: 0,
+  bookmarks: [], loggedIn: false, userInfo: null,
+  sepMode: 'auto', pendingText: '',
+  font: 'Lora', fontSize: 17, lineH: 1.9, width: 680,
+  bgColor: '#faf7f2', textColor: '#1a1612',
+  focusMode: false,
+  ttsActive: false, ttsPlaying: false,
+  ttsVoice: null, ttsRate: 1, ttsVol: 1, ttsPitch: 1,
+  ttsWords: [], ttsCursor: 0, ttsUtterance: null,
+  mobileOpen: false
+};
+
+
+
+// ===================== INIT =====================
+window.addEventListener('DOMContentLoaded', () => {
+  renderChapterList();
+  initTTS();
+  initGoogleAuth();
+  // Close drive panel on outside click
+  document.addEventListener('click', e => {
+    if(!document.getElementById('drivePanel').contains(e.target) &&
+       !e.target.closest('.icon-btn[onclick*="toggleDrive"]')){
+      document.getElementById('drivePanel').classList.remove('open');
+    }
+    if(window.innerWidth <= 640 && S.mobileOpen &&
+       !document.getElementById('sidebar').contains(e.target) &&
+       !e.target.closest('.hamburger')){
+      closeMobileSidebar();
+    }
+  });
+});
+
+// ===================== CHAPTER RENDER (Virtual Scroll) =====================
+const ITEM_H = 52; // px per chapter item (approximate)
+let _vsTotal = 0, _vsStart = 0, _vsEnd = 0;
+
+function renderChapterList(){
+  const list = document.getElementById('chapterList');
+  const toolbar = document.getElementById('readerToolbar');
+  if(!S.chapters.length){
+    list.innerHTML=`<div style="padding:24px 14px;text-align:center;color:var(--ink3);font-size:12px;line-height:1.6">
+      <i class="ti ti-books" style="font-size:28px;display:block;margin-bottom:8px;color:var(--paper3)"></i>
+      Chưa có truyện nào.<br>Bấm <strong style="color:var(--gold2)">Tải lên</strong> để thêm sách.
+    </div>`;
+    toolbar.style.display='none';
+    return;
+  }
+  toolbar.style.display='flex';
+
+  // For small lists (<= 80), render all normally
+  if(S.chapters.length <= 80) {
+    list.innerHTML = S.chapters.map((ch,i)=>`
+      <div class="chapter-item${i===S.currentChapter?' active':''}" onclick="loadChapter(${i});closeMobileSidebar()" data-idx="${i}">
+        <span class="chap-num">${ch.title}</span>${ch.subtitle?`<small style="color:var(--ink3);font-size:11px;display:block;margin-top:1px">${ch.subtitle}</small>`:''}
+      </div>`).join('');
+    return;
+  }
+
+  // Virtual scroll for large lists
+  _vsTotal = S.chapters.length;
+  list.innerHTML = `
+    <div id="vsPad" style="position:relative;height:${_vsTotal * ITEM_H}px">
+      <div id="vsItems" style="position:absolute;top:0;left:0;right:0"></div>
+    </div>`;
+  
+  const renderVisible = () => {
+    const scrollTop = list.scrollTop;
+    const viewH = list.clientHeight;
+    const start = Math.max(0, Math.floor(scrollTop / ITEM_H) - 5);
+    const end = Math.min(_vsTotal - 1, Math.ceil((scrollTop + viewH) / ITEM_H) + 5);
+    if(start === _vsStart && end === _vsEnd) return;
+    _vsStart = start; _vsEnd = end;
+    const items = document.getElementById('vsItems');
+    if(!items) return;
+    items.style.top = (start * ITEM_H) + 'px';
+    items.innerHTML = S.chapters.slice(start, end+1).map((ch,ri)=>{
+      const i = start + ri;
+      return `<div class="chapter-item${i===S.currentChapter?' active':''}" onclick="loadChapter(${i});closeMobileSidebar()" data-idx="${i}" style="height:${ITEM_H}px;overflow:hidden">
+        <span class="chap-num">${ch.title}</span>${ch.subtitle?`<small style="color:var(--ink3);font-size:11px;display:block;margin-top:1px">${ch.subtitle}</small>`:''}
+      </div>`;
+    }).join('');
+  };
+
+  list.addEventListener('scroll', renderVisible, {passive:true});
+  renderVisible();
+}
+
+function scrollToActiveChapter(){
+  const list = document.getElementById('chapterList');
+  if(!list) return;
+  if(S.chapters.length <= 80) {
+    const active = list.querySelector('.chapter-item.active');
+    if(active) active.scrollIntoView({block:'nearest',behavior:'smooth'});
+  } else {
+    // Virtual scroll: scroll list so active item is visible
+    const targetScroll = S.currentChapter * ITEM_H - list.clientHeight / 2 + ITEM_H;
+    list.scrollTo({top: Math.max(0, targetScroll), behavior:'smooth'});
+  }
+}
+
+function loadChapter(idx){
+  stopTts();
+  S.currentChapter = idx;
+  const ch = S.chapters[idx];
+  const pct = Math.round(((idx+1)/S.chapters.length)*100);
+  document.getElementById('chapterPos').textContent = `${idx+1} / ${S.chapters.length}`;
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('progressLabel').textContent = pct+'% đã đọc';
+  const dropcap = document.getElementById('dropcapToggle').checked;
+  const rc = document.getElementById('readerContent');
+  rc.style.background = S.bgColor;
+  const paragraphs = ch.content.split(/\n\n+/).filter(p=>p.trim());
+  const wordSpans = [];
+  let wi = 0;
+  const bodyHtml = paragraphs.map(p=>{
+    const words = p.split(/\s+/);
+    const spans = words.map(w=>{
+      const id='w'+wi; wi++;
+      wordSpans.push({id,text:w});
+      return `<span id="${id}">${w}</span>`;
+    }).join(' ');
+    return `<p>${spans}</p>`;
+  }).join('');
+  rc.innerHTML = `
+    <div style="max-width:${S.width}px;margin:0 auto">
+      <div class="chapter-heading">${ch.title}</div>
+      ${ch.subtitle?`<div class="chapter-sub">${ch.subtitle}</div>`:''}
+      <div class="chapter-body${dropcap?' dropcap':''}" style="font-family:${S.font},serif;font-size:${S.fontSize}px;line-height:${S.lineH};color:${S.textColor}">
+        ${bodyHtml}
+      </div>
+    </div>`;
+  S.ttsWords = wordSpans;
+  S.ttsCursor = 0;
+  updateTtsProgress();
+  renderChapterList();
+  scrollToActiveChapter();
+  updateBmkBtn();
+  if(S.ttsActive) prepareTtsWords();
+}
+
+// ===================== NAVIGATION =====================
+function prevChapter(){ if(S.currentChapter>0) loadChapter(S.currentChapter-1); }
+function nextChapter(){ if(S.currentChapter<S.chapters.length-1) loadChapter(S.currentChapter+1); }
+
+// ===================== TTS =====================
+let synth = window.speechSynthesis;
+let allVoices = [];
+let ttsTimeout = null;
+
+function initTTS(){
+  if(!synth){ showToast('Trình duyệt không hỗ trợ TTS'); return; }
+  const load = () => {
+    allVoices = synth.getVoices();
+    populateVoices();
+  };
+  load();
+  if(synth.onvoiceschanged !== undefined) synth.onvoiceschanged = load;
+}
+
+function populateVoices(){
+  const sel = document.getElementById('ttsVoiceSel');
+  const listEl = document.getElementById('voiceListEl');
+  const viVoices = allVoices.filter(v=>v.lang.startsWith('vi'));
+  if(!viVoices.length){
+    listEl.innerHTML='<div style="color:var(--ink3);font-size:12px;line-height:1.6">Không tìm thấy giọng tiếng Việt.<br>Vào <strong>Cài đặt thiết bị → Trợ năng → Giọng nói</strong> để cài thêm.</div>';
+    sel.style.display='none';
+    return;
+  }
+  S.ttsVoice = viVoices[0];
+  sel.innerHTML = viVoices.map((v,i)=>`<option value="${i}" ${i===0?'selected':''}>${v.name}</option>`).join('');
+  sel.style.display='inline-block';
+  listEl.innerHTML = `<div class="tts-voice-list">` +
+    viVoices.map((v,i)=>`
+      <div class="voice-item${i===0?' active':''}" onclick="selectViVoice(${i},this)">
+        ${v.name}
+      </div>`).join('') +
+    `</div>`;
+  sel.onchange = () => {
+    S.ttsVoice = viVoices[parseInt(sel.value)];
+    document.querySelectorAll('.voice-item').forEach((el,i)=>el.classList.toggle('active',i===parseInt(sel.value)));
+    if(S.ttsPlaying){ synth.cancel(); speakFrom(S.ttsCursor); }
+  };
+}
+
+function selectViVoice(idx, el){
+  const viVoices = allVoices.filter(v=>v.lang.startsWith('vi'));
+  S.ttsVoice = viVoices[idx];
+  document.getElementById('ttsVoiceSel').value = idx;
+  document.querySelectorAll('.voice-item').forEach((e,i)=>e.classList.toggle('active',i===idx));
+  if(S.ttsPlaying){ synth.cancel(); speakFrom(S.ttsCursor); }
+}
+
+function toggleTtsBar(){
+  S.ttsActive = !S.ttsActive;
+  document.getElementById('ttsBar').classList.toggle('hidden', !S.ttsActive);
+  document.getElementById('ttsToggleBtn').classList.toggle('active', S.ttsActive);
+  if(!S.ttsActive) stopTts();
+}
+
+function togglePlay(){
+  if(!S.chapters.length){ showToast('Chưa có truyện nào để đọc'); return; }
+  if(S.ttsPlaying){ pauseTts(); } else { speakFrom(S.ttsCursor); }
+}
+
+// Biến toàn cục để giữ tham chiếu tránh bị Garbage Collector xóa mất
+let currentUtterance = null; 
+
+function speakFrom(startIdx) {
+  if (!synth) return;
+  synth.cancel();
+  clearTimeout(ttsTimeout);
+  
+  if (startIdx >= S.ttsWords.length) {
+    S.ttsPlaying = false;
+    updatePlayBtn();
+    showToast('Đã đọc hết chương');
+    return;
+  }
+
+  // Tăng số lượng từ mỗi chu kỳ lên 100-150 từ để giảm tần suất gọi lại, tránh nghẽn bộ nhớ
+  const chunkSize = 120; 
+  const chunk = S.ttsWords.slice(startIdx, startIdx + chunkSize);
+  const text = chunk.map(w => w.text).join(' ');
+  
+  // Gán vào biến toàn cục thay vì biến cục bộ (const utter)
+  currentUtterance = new SpeechSynthesisUtterance(text);
+  currentUtterance.lang = 'vi-VN';
+  if (S.currentVoice || S.ttsVoice) currentUtterance.voice = S.ttsVoice;
+  currentUtterance.rate = S.ttsRate;
+  currentUtterance.volume = S.ttsVol;
+  currentUtterance.pitch = S.ttsPitch;
+
+  let localIdx = 0;
+  currentUtterance.onboundary = e => {
+    if (e.name !== 'word') return;
+    const wi = startIdx + localIdx;
+    highlightWord(wi);
+    S.ttsCursor = wi;
+    localIdx++;
+    updateTtsProgress();
+  };
+
+  currentUtterance.onend = () => {
+    S.ttsCursor = startIdx + chunk.length;
+    clearHighlight();
+    if (S.ttsCursor < S.ttsWords.length) {
+      // Đảm bảo giải phóng bộ nhớ cũ trước khi gọi lượt tiếp theo
+      currentUtterance = null; 
+      ttsTimeout = setTimeout(() => speakFrom(S.ttsCursor), 50);
+    } else {
+      S.ttsPlaying = false;
+      updatePlayBtn();
+      showToast('Đã đọc xong chương này');
+    }
+  };
+
+  currentUtterance.onerror = (event) => {
+    // Nếu lỗi do bị hủy chủ động (synth.cancel) thì bỏ qua, nếu lỗi hệ thống thì dừng
+    if (event.error !== 'interrupted') {
+      S.ttsPlaying = false; 
+      updatePlayBtn();
+    }
+  };
+
+  S.ttsUtterance = currentUtterance;
+  S.ttsPlaying = true;
+  updatePlayBtn();
+  synth.speak(currentUtterance);
+}
+function pauseTts(){
+  synth.pause();
+  S.ttsPlaying = false;
+  updatePlayBtn();
+}
+
+function stopTts(){
+  synth && synth.cancel();
+  clearTimeout(ttsTimeout);
+  S.ttsPlaying = false;
+  S.ttsCursor = 0;
+  clearHighlight();
+  updatePlayBtn();
+  updateTtsProgress();
+}
+
+function skipTts(delta){
+  const newPos = Math.max(0, Math.min(S.ttsWords.length-1, S.ttsCursor + delta));
+  S.ttsCursor = newPos;
+  if(S.ttsPlaying){ synth.cancel(); speakFrom(S.ttsCursor); }
+  else updateTtsProgress();
+}
+
+function seekTts(e){
+  const rect = document.getElementById('ttsTrack').getBoundingClientRect();
+  const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  S.ttsCursor = Math.floor(pct * S.ttsWords.length);
+  if(S.ttsPlaying){ synth.cancel(); speakFrom(S.ttsCursor); }
+  else updateTtsProgress();
+}
+
+function changeRate(v){ S.ttsRate = parseFloat(v); if(S.ttsPlaying){ synth.cancel(); speakFrom(S.ttsCursor); } }
+function changeVol(v){ S.ttsVol = parseFloat(v); document.getElementById('volVal').textContent = Math.round(v*100)+'%'; if(S.ttsPlaying){ synth.cancel(); speakFrom(S.ttsCursor); } }
+function changePitch(v){ S.ttsPitch = parseFloat(v); document.getElementById('pitchVal').textContent = parseFloat(v).toFixed(1); if(S.ttsPlaying){ synth.cancel(); speakFrom(S.ttsCursor); } }
+
+
+function highlightWord(wi){
+  clearHighlight();
+  if(!document.getElementById('highlightToggle').checked) return;
+  const word = S.ttsWords[wi];
+  if(!word) return;
+  const el = document.getElementById(word.id);
+  if(el){
+    el.classList.add('tts-word-highlight');
+    el.scrollIntoView({block:'nearest',behavior:'smooth'});
+  }
+}
+function clearHighlight(){ document.querySelectorAll('.tts-word-highlight').forEach(e=>e.classList.remove('tts-word-highlight')); }
+function updatePlayBtn(){
+  const ic = document.getElementById('ttsPlayIcon');
+  ic.className = S.ttsPlaying ? 'ti ti-player-pause' : 'ti ti-player-play';
+}
+function updateTtsProgress(){
+  const total = S.ttsWords.length;
+  const cur = Math.min(S.ttsCursor, total);
+  const pct = total ? Math.round((cur/total)*100) : 0;
+  document.getElementById('ttsFill').style.width = pct+'%';
+  document.getElementById('ttsPos').textContent = `${cur} / ${total} từ`;
+  document.getElementById('ttsPct').textContent = pct+'%';
+  document.getElementById('ttsLabel').textContent = S.chapters[S.currentChapter]?.title || 'TTS';
+}
+function prepareTtsWords(){ updateTtsProgress(); }
+
+// ===================== READING SETTINGS =====================
+function updateFont(){
+  S.fontSize = document.getElementById('fontSizeSlider').value;
+  S.lineH = (document.getElementById('lineHSlider').value/10).toFixed(1);
+  S.width = document.getElementById('widthSlider').value;
+  document.getElementById('fontSizeVal').textContent = S.fontSize+'px';
+  document.getElementById('lineHVal').textContent = S.lineH;
+  document.getElementById('widthVal').textContent = S.width;
+  const body = document.querySelector('.chapter-body');
+  if(body){
+    body.style.fontFamily = S.font+',serif';
+    body.style.fontSize = S.fontSize+'px';
+    body.style.lineHeight = S.lineH;
+  }
+  const wrap = document.querySelector('#readerContent > div');
+  if(wrap) wrap.style.maxWidth = S.width+'px';
+}
+
+function setFont(f, el){
+  S.font = f;
+  document.querySelectorAll('.font-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  const body = document.querySelector('.chapter-body');
+  if(body) body.style.fontFamily = f+',serif';
+}
+
+function setBg(bg, text, el){
+  S.bgColor = bg; S.textColor = text;
+  document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('readerContent').style.background = bg;
+  const body = document.querySelector('.chapter-body');
+  if(body) body.style.color = text;
+  const heading = document.querySelector('.chapter-heading');
+  if(heading) heading.style.color = text;
+}
+
+function toggleFocus(){
+  S.focusMode = document.getElementById('focusMode').checked;
+  document.getElementById('sidebar').classList.toggle('hidden', S.focusMode);
+  document.getElementById('readerToolbar').classList.toggle('hidden', S.focusMode);
+  document.getElementById('readerContent').classList.toggle('focus-mode', S.focusMode);
+}
+
+function toggleSettings(){
+  document.getElementById('settingsPanel').classList.toggle('open');
+  document.getElementById('settBtn').classList.toggle('active');
+}
+
+// ===================== BOOKMARK =====================
+function toggleBookmark(){
+  const idx = S.currentChapter;
+  const i = S.bookmarks.indexOf(idx);
+  if(i===-1){ S.bookmarks.push(idx); showToast('Đã bookmark chương này'); }
+  else { S.bookmarks.splice(i,1); showToast('Đã xóa bookmark'); }
+  updateBmkBtn(); renderBookmarks();
+}
+function updateBmkBtn(){
+  document.getElementById('bmkBtn').classList.toggle('active', S.bookmarks.includes(S.currentChapter));
+}
+function renderBookmarks(){
+  const el = document.getElementById('bookmarkList');
+  if(!S.bookmarks.length){ el.textContent='Chưa có bookmark nào'; return; }
+  el.innerHTML = S.bookmarks.map(i=>`
+    <div class="bm-item">
+      <span class="bm-link" onclick="loadChapter(${i})">${S.chapters[i].title}</span>
+      <button class="bm-del" onclick="removeBookmark(${i})">×</button>
+    </div>`).join('');
+}
+function removeBookmark(i){ S.bookmarks=S.bookmarks.filter(b=>b!==i); updateBmkBtn(); renderBookmarks(); }
+
+// ===================== LOGIN / DRIVE =====================
+const GOOGLE_CLIENT_ID = '678182193542-dnti4timh4i8n72k8brg1m2fjt9a1aht.apps.googleusercontent.com';
+
+let googleAccessToken = null;
+
+function initGoogleAuth() {
+  if (typeof google === 'undefined') {
+    // Retry until GSI script is loaded
+    setTimeout(initGoogleAuth, 300);
+    return;
+  }
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleCredentialResponse,
+    auto_select: false,
+    cancel_on_tap_outside: true,
+  });
+}
+
+function handleCredentialResponse(response) {
+  // Decode JWT payload from Google
+  try {
+    const payload = JSON.parse(atob(response.credential.split('.')[1]));
+    S.loggedIn = true;
+    S.userInfo = {
+      name: payload.name,
+      email: payload.email,
+      picture: payload.picture,
+      initials: payload.name ? payload.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() : '?'
+    };
+    const av = document.getElementById('avatarEl');
+    if (payload.picture) {
+      av.innerHTML = `<img src="${payload.picture}" style="width:32px;height:32px;border-radius:50%;object-fit:cover" referrerpolicy="no-referrer">`;
+    } else {
+      av.textContent = S.userInfo.initials;
+    }
+    document.getElementById('loginBtn').style.display = 'none';
+    av.style.display = 'flex';
+    showToast(`Xin chào, ${payload.given_name || payload.name}!`);
+  } catch(e) {
+    showToast('Lỗi đăng nhập, vui lòng thử lại');
+  }
+}
+
+function doLogin() {
+  if (typeof google === 'undefined') {
+    showToast('Đang tải Google Auth, vui lòng thử lại...');
+    return;
+  }
+  google.accounts.id.prompt((notification) => {
+    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+      // Fallback: open popup OAuth flow
+      const params = new URLSearchParams({
+        client_id: GOOGLE_CLIENT_ID,
+        redirect_uri: window.location.origin + window.location.pathname,
+        response_type: 'token',
+        scope: 'openid email profile https://www.googleapis.com/auth/drive.file',
+        prompt: 'select_account'
+      });
+      const popup = window.open('https://accounts.google.com/o/oauth2/v2/auth?' + params, 'google_login', 'width=500,height=600,left=200,top=100');
+      // Listen for redirect with token
+      const interval = setInterval(() => {
+        try {
+          const hash = popup.location.hash;
+          if (hash && hash.includes('access_token')) {
+            clearInterval(interval);
+            popup.close();
+            const tokenMatch = hash.match(/access_token=([^&]+)/);
+            if (tokenMatch) {
+              googleAccessToken = tokenMatch[1];
+              // Fetch user info
+              fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                headers: { Authorization: 'Bearer ' + googleAccessToken }
+              }).then(r=>r.json()).then(info => {
+                S.loggedIn = true;
+                S.userInfo = {
+                  name: info.name, email: info.email, picture: info.picture,
+                  initials: info.name ? info.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() : '?'
+                };
+                const av = document.getElementById('avatarEl');
+                if (info.picture) {
+                  av.innerHTML = `<img src="${info.picture}" style="width:32px;height:32px;border-radius:50%;object-fit:cover" referrerpolicy="no-referrer">`;
+                } else {
+                  av.textContent = S.userInfo.initials;
+                }
+                document.getElementById('loginBtn').style.display = 'none';
+                av.style.display = 'flex';
+                showToast(`Xin chào, ${info.given_name || info.name}!`);
+              });
+            }
+          }
+        } catch(e) { /* cross-origin, still loading */ }
+        if (popup.closed) clearInterval(interval);
+      }, 500);
+    }
+  });
+}
+
+function doLogout() {
+  S.loggedIn = false;
+  S.userInfo = null;
+  googleAccessToken = null;
+  if (typeof google !== 'undefined') google.accounts.id.disableAutoSelect();
+  document.getElementById('loginBtn').style.display = '';
+  const av = document.getElementById('avatarEl');
+  av.style.display = 'none';
+  av.innerHTML = 'NT';
+  document.getElementById('drivePanel').classList.remove('open');
+  showToast('Đã đăng xuất');
+}
+
+function toggleDrive(){
+  if(!S.loggedIn){ showToast('Vui lòng đăng nhập trước'); return; }
+  document.getElementById('drivePanel').classList.toggle('open');
+  if (document.getElementById('drivePanel').classList.contains('open')) {
+    const info = document.getElementById('dpUserInfo');
+    if (S.userInfo) {
+      info.innerHTML = `<div style="font-size:11px;color:var(--ink3);margin-bottom:10px;padding-bottom:8px;border-bottom:.5px solid var(--paper3)">
+        <span style="font-weight:500;color:var(--ink)">${S.userInfo.name}</span><br>${S.userInfo.email}
+        <button onclick="doLogout()" style="display:block;margin-top:6px;font-size:11px;color:var(--ink3);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline">Đăng xuất</button>
+      </div>`;
+    }
+  }
+}
+function saveToDrive(){
+  if (!googleAccessToken) { showToast('Cần đăng nhập để lưu Drive'); return; }
+  const s = document.getElementById('dpStatus');
+  s.textContent='Đang lưu vào Google Drive...'; s.classList.add('show');
+  // Save current book as .txt to Drive
+  const content = S.chapters.map(ch => ch.title + (ch.subtitle ? ': '+ch.subtitle : '') + '\n\n' + ch.content).join('\n\n');
+  const blob = new Blob([content], {type:'text/plain'});
+  const formData = new FormData();
+  const meta = JSON.stringify({name: (document.getElementById('bookTitle').textContent||'NovReader') + '.txt', mimeType:'text/plain'});
+  formData.append('metadata', new Blob([meta],{type:'application/json'}));
+  formData.append('file', blob);
+  fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+    method:'POST',
+    headers:{Authorization:'Bearer '+googleAccessToken},
+    body: formData
+  }).then(r=>r.json()).then(data=>{
+    if(data.id) s.textContent='✓ Đã lưu vào Google Drive!';
+    else s.textContent='Lỗi: '+( data.error?.message||'Không rõ');
+  }).catch(()=>{ s.textContent='Lỗi kết nối Drive'; });
+}
+function saveToFirebase(){
+  const s = document.getElementById('dpStatus');
+  s.textContent='Firebase chưa được cấu hình.'; s.classList.add('show');
+}
+
+// ===================== UPLOAD =====================
+function openUpload(){ document.getElementById('uploadModal').classList.add('open'); }
+function closeUpload(){ document.getElementById('uploadModal').classList.remove('open'); }
+function selectSep(mode, el){
+  S.sepMode = mode;
+  document.querySelectorAll('.sep-tag').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('customSepRow').style.display = mode==='custom'?'flex':'none';
+}
+// ---- Toàn bộ pattern hỗ trợ ----
+// Mỗi entry: { re: RegExp để DETECT dòng tiêu đề, split: RegExp để TÁCH title/subtitle }
+const CHAPTER_PATTERNS = {
+  // ── "Chương 1"  "Chương 100"  "Chương100"
+  // ── "Chương 1:" "Chương 102:" "Chương 102: Tên chương"
+  // ── "Chuong 1"  "Chuong 102:"
+  // ── "Chương thứ 5"  "Chương thứ mười"
+  // ── "Chương I"  "Chương IV"
+  chapter: {
+    re: /^ch[uư][oơ]ng\s*(?:th[uứ]\s*)?(\d+|[ivxlcdmIVXLCDM]+)(\s*[:\s]\s*|\s*$)/i,
+    split: (line) => {
+      const m = line.match(/^(ch[uư][oơ]ng\s*(?:th[uứ]\s*)?[\d\w]+)\s*[:\s]\s*(.*)/i);
+      if (m) return { title: m[1].trim(), subtitle: m[2].trim() };
+      return { title: line.trim(), subtitle: '' };
+    }
+  },
+
+  // ── "Thứ 21 chương đường nhỏ dịch trạm"
+  //    title = "Thứ 21 chương", subtitle = "đường nhỏ dịch trạm"
+  thu: {
+    re: /^th[uứ]\s+\d+\s+ch[uư][oơ]ng/i,
+    split: (line) => {
+      const m = line.match(/^(th[uứ]\s+\d+\s+ch[uư][oơ]ng)\s*(.*)/i);
+      if (m) return { title: m[1].trim(), subtitle: m[2].trim() };
+      return { title: line.trim(), subtitle: '' };
+    }
+  },
+
+  // ── Tự động: match cả "Thứ XX chương ..." lẫn "Chương XX:" trong cùng 1 file
+  auto: {
+    re: /^(ch[uư][oơ]ng\s*(?:th[uứ]\s*)?(\d+|[ivxlcdmIVXLCDM]+)(\s*[:\s]\s*|\s*$)|th[uứ]\s+\d+\s+ch[uư][oơ]ng)/i,
+    split: (line) => {
+      const mThu = line.match(/^(th[uứ]\s+\d+\s+ch[uư][oơ]ng)\s*(.*)/i);
+      if (mThu) return { title: mThu[1].trim(), subtitle: mThu[2].trim() };
+      const mCh = line.match(/^(ch[uư][oơ]ng\s*(?:th[uứ]\s*)?[\d\w]+)\s*[:\s]\s*(.*)/i);
+      if (mCh) return { title: mCh[1].trim(), subtitle: mCh[2].trim() };
+      return { title: line.trim(), subtitle: '' };
+    }
+  },
+
+  // ── "Chapter 1"  "Chapter 100"  "Chapter 1: Title"
+  chapter_en: {
+    re: /^chapter\s*[\d\w]+[\s:]/i,
+    split: (line) => {
+      const m = line.match(/^(chapter\s*[\d\w]+)\s*[:\s]\s*(.*)/i);
+      if (m) return { title: m[1].trim(), subtitle: m[2].trim() };
+      return { title: line.trim(), subtitle: '' };
+    }
+  },
+
+  // ── "Hồi 1"  "Hồi 100"  "Hồi 1: Tên"
+  hoi: {
+    re: /^h[oồ]i\s*\d+[\s:]/i,
+    split: (line) => {
+      const m = line.match(/^(h[oồ]i\s*\d+)\s*[:\s]\s*(.*)/i);
+      if (m) return { title: m[1].trim(), subtitle: m[2].trim() };
+      return { title: line.trim(), subtitle: '' };
+    }
+  },
+
+  // ── "Phần 1"  "Phần 100"  "Phần 1: Tên"
+  phan: {
+    re: /^ph[aầ]n\s*\d+[\s:]/i,
+    split: (line) => {
+      const m = line.match(/^(ph[aầ]n\s*\d+)\s*[:\s]\s*(.*)/i);
+      if (m) return { title: m[1].trim(), subtitle: m[2].trim() };
+      return { title: line.trim(), subtitle: '' };
+    }
+  },
+
+  // ── Dòng phân cách: ---  ===  ***  ~~~  ___
+  separator: {
+    re: /^([-=*_~]{3,}|[—–]{2,})$/,
+    split: null
+  },
+};
+
+function getPattern(){
+  if(S.sepMode === 'custom'){
+    const kw = document.getElementById('customSepInput').value.trim();
+    return kw ? new RegExp('^'+kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i') : CHAPTER_PATTERNS.auto.re;
+  }
+  return (CHAPTER_PATTERNS[S.sepMode] || CHAPTER_PATTERNS.auto).re;
+}
+
+function splitTitleSubtitle(line, mode) {
+  const def = CHAPTER_PATTERNS[mode] || CHAPTER_PATTERNS.auto;
+  if (!def.split) return { title: line.trim(), subtitle: '' };
+  return def.split(line);
+}
+
+// Auto-detect: scan đầu + giữa + cuối file để phát hiện format
+function autoDetectFormat(text) {
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const counts = {};
+  const step = Math.max(1, Math.floor(lines.length / 300));
+  for (let i = 0; i < lines.length; i += step) {
+    const line = lines[i];
+    for (const [key, {re}] of Object.entries(CHAPTER_PATTERNS)) {
+      if (key === 'auto') continue; // bỏ qua auto khi detect
+      if (re.test(line)) counts[key] = (counts[key]||0) + 1;
+    }
+  }
+  // Nếu có cả thu lẫn chapter → dùng auto
+  if ((counts.thu || 0) > 0 && (counts.chapter || 0) > 0) {
+    return 'auto';
+  }
+  const best = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+  return best ? best[0] : 'auto';
+}
+function handleFile(e){ const f=e.target.files[0]; if(f) parseFile(f); }
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if(f && f.name.endsWith('.txt')) parseFile(f);
+}
+function triggerParse(){ if(S.pendingText) doParse(S.pendingText, S.pendingName||'Sách mới'); }
+
+let pendingReader = null;
+function parseFile(file){
+  S.pendingName = file.name.replace(/\.txt$/i,'');
+  const r = new FileReader();
+  r.onload = e => {
+    S.pendingText = e.target.result;
+    // Show file name in dropzone
+    document.querySelector('.drop-zone p').textContent = '📄 '+file.name;
+  };
+  r.readAsText(file,'utf-8');
+}
+
+function doParse(text, name){
+  // Auto-detect chỉ khi người dùng chọn "chapter" (default cũ) và chưa chọn gì
+  // Khi đã là 'auto' thì dùng luôn pattern auto (match cả hai format)
+  if (S.sepMode !== 'auto' && S.sepMode !== 'custom' && S.sepMode !== 'separator') {
+    // Người dùng đã chọn rõ mode → dùng luôn, không auto-detect
+  }
+  // Nếu là auto → detect để log thôi, không đổi mode
+  if (S.sepMode === 'auto') {
+    autoDetectFormat(text); // chỉ để log counts ra console
+  }
+
+  const pattern = getPattern();
+
+  const isSeparator = S.sepMode === 'separator';
+  const lines = text.split(/\r?\n/);
+  const chapters = [];
+  let current = null, buf = [], sepCount = 0;
+  let matchCount = 0;
+  const matchedTitles = [];
+
+  for(const line of lines){
+    const t = line.trim();
+
+    if(isSeparator) {
+      if(/^([-=*_~]{3,}|[—–]{2,})$/.test(t)) {
+        if(current){ current.content = buf.join('\n\n').trim(); chapters.push(current); }
+        sepCount++;
+        current = { title: `Phần ${sepCount}`, subtitle: '', content: '' };
+        buf = [];
+        matchCount++;
+      } else {
+        if(current && buf.length === 0 && t) current.title = t;
+        else if(current && t) buf.push(t);
+        else if(!current && t) { current = { title: name, subtitle: '', content: '' }; buf.push(t); }
+      }
+    } else {
+      if(!t) continue;
+      if(pattern.test(t)){
+        matchCount++;
+        matchedTitles.push(t.slice(0, 60));
+        if(current){ current.content = buf.join('\n\n').trim(); chapters.push(current); }
+        // Dùng splitTitleSubtitle thay vì split cứng bằng dấu :
+        const { title, subtitle } = splitTitleSubtitle(t, S.sepMode);
+        current = { title, subtitle, content: '' };
+        buf = [];
+      } else {
+        if(current) buf.push(t);
+      }
+    }
+  }
+  if(current){ current.content = buf.join('\n\n').trim(); chapters.push(current); }
+
+  // Kiểm tra các chương bị lọc bỏ
+  const emptyChaps = chapters.filter(ch => ch.content.length <= 10);
+
+  const validChapters = chapters.filter(ch => ch.content.length > 10);
+
+  if(!validChapters.length){
+    const paras = text.split(/\n\n+/).filter(p=>p.trim()).map(p=>p.trim());
+    validChapters.push({title:name, subtitle:'Toàn bộ nội dung', content:paras.join('\n\n')});
+  }
+
+  S.chapters = validChapters;
+  S.currentChapter = 0;
+  document.getElementById('bookTitle').textContent = name;
+  document.getElementById('bookInfo').textContent = `${validChapters.length} chương`;
+  renderChapterList();
+  loadChapter(0);
+  closeUpload();
+  showToast(`Đã tải "${name}" — ${validChapters.length} chương`);
+}
+
+// ===================== MOBILE =====================
+function toggleMobileSidebar(){
+  if(S.mobileOpen) closeMobileSidebar(); else openMobileSidebar();
+}
+function openMobileSidebar(){
+  S.mobileOpen = true;
+  document.getElementById('sidebar').classList.add('mobile-open');
+}
+function closeMobileSidebar(){
+  S.mobileOpen = false;
+  document.getElementById('sidebar').classList.remove('mobile-open');
+}
+
+// ===================== TOAST =====================
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
